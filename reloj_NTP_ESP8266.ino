@@ -17,6 +17,9 @@ TM1637 tm1637(0, 2);              // CLK, DIO (D6, D5)
 
 char ssid[] = "Wireless-N";             //  your network SSID (name)
 char pass[] = "z123456z";         // your network password
+//char ssid[] = "WLAN_BF";             //  your network SSID (name)
+//char pass[] = "Z404A03CF9CBF";         // your network password
+
 
 byte hour, minute, second;
 boolean point;
@@ -55,7 +58,7 @@ void flip() {
 // send an NTP request to the time server at the given address
 unsigned long sendNTPpacket(IPAddress& address)
 {
-  //Serial.println("sending NTP packet...");
+  Serial.println("sending NTP packet...");
   // set all bytes in the buffer to 0
   memset(packetBuffer, 0, NTP_PACKET_SIZE);
   // Initialize values needed to form NTP request
@@ -89,12 +92,12 @@ void oldloop()
 
   int cb = udp.parsePacket();
   if (!cb) {
-    //Serial.println("no packet yet");
+    Serial.println("no packet yet");
      __asm__("nop\n\t");  
   }
   else {
-   // Serial.print("packet received, length=");
-   // Serial.println(cb);
+    Serial.print("packet received, length=");
+    Serial.println(cb);
     // We've received a packet, read the data from it
     udp.read(packetBuffer, NTP_PACKET_SIZE); // read the packet into the buffer
 
@@ -106,17 +109,17 @@ void oldloop()
     // combine the four bytes (two words) into a long integer
     // this is NTP time (seconds since Jan 1 1900):
     unsigned long secsSince1900 = highWord << 16 | lowWord;
-    //Serial.print("Seconds since Jan 1 1900 = " );
-    //Serial.println(secsSince1900);
+    Serial.print("Seconds since Jan 1 1900 = " );
+    Serial.println(secsSince1900);
 
     // now convert NTP time into everyday time:
-    //Serial.print("Unix time = ");
+    Serial.print("Unix time = ");
     // Unix time starts on Jan 1 1970. In seconds, that's 2208988800:
     const unsigned long seventyYears = 2208988800UL;
     // subtract seventy years:
     unsigned long epoch = secsSince1900 - seventyYears;
     // print Unix time:
-    //Serial.println(epoch);
+    Serial.println(epoch);
 
    
     epoch = epoch + GMT * 3600 ;
@@ -124,8 +127,8 @@ void oldloop()
     hour = (epoch  % 86400L) / 3600;
     minute = (epoch  % 3600) / 60;
     second = epoch % 60;
-  }
-    /*
+ 
+   
     // print the hour, minute and second:
     Serial.print("The UTC time is ");       // UTC is the time at Greenwich Meridian (GMT)
     Serial.print((epoch  % 86400L) / 3600); // print the hour (86400 equals secs per day)
@@ -143,14 +146,14 @@ void oldloop()
     Serial.println(epoch % 60); // print the second
   }
   // wait ten seconds before asking for the time again
- */
+ 
 
 }
 
 
 void setup()
 {
-  //Serial.begin(115200);
+  Serial.begin(115200);
 
   tm1637.set(5);
   tm1637.init(D4036B);               ///tm1637
@@ -160,28 +163,30 @@ void setup()
 
   flipper.attach(1, flip);          /// Ð¿Ñ€ÐµÑ€Ñ‹Ð²Ð°Ð½Ð¸Ðµ 1 Ñ�ÐµÐº
 
-  //Serial.println();
-  //Serial.println();
+  Serial.println();
+  Serial.println();
 
   // We start by connecting to a WiFi network
-  //Serial.print("Connecting to ");
-  //Serial.println(ssid);
+  Serial.print("Connecting to ");
+  Serial.println(ssid);
   WiFi.begin(ssid, pass);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    //Serial.print(".");
+  WiFi.mode(WIFI_STA);
+  while (WiFi.status() != WL_CONNECTED)
+  {
+    delay(1500);
+    //WiFi.begin(ssid, pass);
+    Serial.print("*");
   }
-  //Serial.println("");
+  Serial.println("");
 
- // Serial.println("WiFi connected");
- // Serial.println("IP address: ");
- // Serial.println(WiFi.localIP());
+  Serial.println("WiFi connected");
+  Serial.println("IP address: ");
+  Serial.println(WiFi.localIP());
 
-  //Serial.println("Starting UDP");
+  Serial.println("Starting UDP");
   udp.begin(localPort);
-  //Serial.print("Local port: ");
-  //Serial.println(udp.localPort());
+  Serial.print("Local port: ");
+  Serial.println(udp.localPort());
 
   oldloop();
 }
