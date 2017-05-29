@@ -12,7 +12,7 @@
 Ticker flipper;
 TM1637 tm1637(0, 2);              // CLK, DIO (D6, D5)
 //TM1637Display display(0, 2);
-#define GMT 1                       // INVIERNO GMT=1 ,VERANO GMT=2
+#define GMT 2                       // INVIERNO GMT=1 ,VERANO GMT=2
 #define brightness 4
 
 char ssid[] = "Wireless-N";             //  your network SSID (name)
