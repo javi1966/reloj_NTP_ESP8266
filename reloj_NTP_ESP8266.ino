@@ -37,7 +37,7 @@ const long timerUpdate = 60L;  //medio minuto
 const long timer5seg = 20 ;    //5 seg
 bool  flagUpdate = false;
 bool flagUpdate5seg = false;
-bool flag1hora=false;
+bool flag1hora = false;
 bool tarea = false;
 int valorH;
 int valorM;
@@ -67,14 +67,14 @@ void TimingISR()
   //digitalWrite(LED_BUILTIN, !digitalRead(LED_BUILTIN));
 
   point = !point;
-  
+
   if (++cntT1hora > 7200 )  //7200
   {
-     flag1hora=true;
+    flag1hora = true;
 
-     cntT1hora = 0;
+    cntT1hora = 0;
   }
- 
+
   if (++cntTemp > timerUpdate)
   {
     flagUpdate = true;
@@ -112,34 +112,42 @@ void setup()
   Serial.println(ssid);
   WiFi.begin(ssid, pass);
   WiFi.mode(WIFI_STA);
+
+  int timeout = 0;
   while (WiFi.status() != WL_CONNECTED)
   {
-    delay(1500);
-
+    delay(500);
     Serial.print("*");
+
+    if (++timeout > 100)
+    {
+      Serial.println("Sin Conexion WIFI");
+      ESP.reset();
+    }
   }
 
-  Serial.println("");
 
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
+Serial.println("");
 
-
-  reqOpenweather();
+Serial.println("WiFi connected");
+Serial.println("IP address: ");
+Serial.println(WiFi.localIP());
 
 
-  timeClient.begin();
-  timeClient.setTimeOffset(timezone);
-  //timeClient.setTimeOffset(3600);
-  dameHora();
+reqOpenweather();
 
- 
-  noInterrupts();
-  timer0_isr_init();
-  timer0_attachInterrupt(TimingISR);
-  timer0_write(ESP.getCycleCount() + 40000000L); // 80MHz == 1sec
-  interrupts();
+
+timeClient.begin();
+timeClient.setTimeOffset(timezone);
+//timeClient.setTimeOffset(3600);
+dameHora();
+
+
+noInterrupts();
+timer0_isr_init();
+timer0_attachInterrupt(TimingISR);
+timer0_write(ESP.getCycleCount() + 40000000L); // 80MHz == 1sec
+interrupts();
 }
 
 //*******************************************************************************************************
@@ -153,7 +161,7 @@ void reqOpenweather() {
   if (httpCode > 0) {
 
     Serial.println(http.getString());
-    const size_t capacity = JSON_ARRAY_SIZE(1) + 2*JSON_OBJECT_SIZE(1) + 2*JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(14) + 290;
+    const size_t capacity = JSON_ARRAY_SIZE(1) + 2 * JSON_OBJECT_SIZE(1) + 2 * JSON_OBJECT_SIZE(2) + JSON_OBJECT_SIZE(4) + JSON_OBJECT_SIZE(5) + JSON_OBJECT_SIZE(6) + JSON_OBJECT_SIZE(14) + 290;
     DynamicJsonDocument doc(capacity);
 
     DeserializationError error = deserializeJson(doc, http.getString());
@@ -166,9 +174,9 @@ void reqOpenweather() {
 
     JsonObject main = doc["main"];
     temperatura = main["temp"];
-    timezone = doc["timezone"]; 
+    timezone = doc["timezone"];
 
-    Serial.println(temperatura+","+timezone);
+    Serial.println(temperatura + "," + timezone);
 
 
     http.end();
@@ -182,19 +190,19 @@ void reqOpenweather() {
 }
 
 //*********************************************************************************************************
-void dameHora(){
+void dameHora() {
 
-    timeClient.update();
-    String formattedTime = timeClient.getFormattedTime();
-    // Serial.println(formattedTime);
+  timeClient.update();
+  String formattedTime = timeClient.getFormattedTime();
+  // Serial.println(formattedTime);
 
-    int split = formattedTime.indexOf(":");
-    hora = formattedTime.substring(0, split);
-    minuto = formattedTime.substring(split + 1, split + 3);
-   // Serial.println("Hora Actual: " + hora + ":" + minuto);
+  int split = formattedTime.indexOf(":");
+  hora = formattedTime.substring(0, split);
+  minuto = formattedTime.substring(split + 1, split + 3);
+  // Serial.println("Hora Actual: " + hora + ":" + minuto);
 
-    valorH = String(hora).toInt();
-    valorM =  String(minuto).toInt();
+  valorH = String(hora).toInt();
+  valorM =  String(minuto).toInt();
 
 }
 
@@ -215,16 +223,16 @@ void loop() {
 
   }
 
-  if(flag1hora){
+  if (flag1hora) {
 
     reqOpenweather();
-    
-    flag1hora=false;
+
+    flag1hora = false;
   }
 
   if (flagUpdate5seg) {
 
-  //  Serial.println("5 seg");
+    //  Serial.println("5 seg");
     tarea = !tarea;
     flagUpdate5seg = false;
   }
